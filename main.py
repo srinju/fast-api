@@ -4,6 +4,7 @@ from pydantic import BaseModel # type: ignore
 
 app = FastAPI() #instance of the fastapi
 
+
 @app.get('/blog') #path operarion decorator
 def index(limit=10,published : bool=True , sort=True) : #path operaation function
     #in the url it will be in form of >> http://127.0.0.1:8000/blog?limit=10&published=true
