@@ -4,9 +4,12 @@ from .. import schemas , models , hashing
 from ..database import engine,get_db
 from sqlalchemy.orm import Session
 
-router = APIRouter();
+router = APIRouter(
+    prefix="/blog",
+    tags=['blogs']
+);
 
-@router.get('/blog' , status_code=200 , response_model = list[schemas.showBlog], tags=['blogs'])
+@router.get('/' , status_code=200 , response_model = list[schemas.showBlog], tags=['blogs'])
 def getBlogs(db : Session = Depends(get_db)) :
     blogs = db.query(models.Blog).all() #query from the db with the model.blog meaning the model we want and .all is all of it
     if not blogs :
@@ -15,7 +18,7 @@ def getBlogs(db : Session = Depends(get_db)) :
     return blogs
 
 
-@router.post('/blog' , status_code=status.HTTP_201_CREATED , tags=['blogs'])
+@router.post('/' , status_code=status.HTTP_201_CREATED )
 def createBlog(request : schemas.Blog , db : Session = Depends(get_db)) :
     
     new_blog = models.Blog(title=request.title , body=request.body , user_id = 1) #defingin the bolg model that is going to be input in the db
@@ -25,7 +28,7 @@ def createBlog(request : schemas.Blog , db : Session = Depends(get_db)) :
     return new_blog
 
 
-@router.get('/blog/{id}' , status_code = 200 , response_model = schemas.showBlog , tags=['blogs']) #response model is schema.blog that means it will not show id
+@router.get('/{id}' , status_code = 200 , response_model = schemas.showBlog ) #response model is schema.blog that means it will not show id
 def getSingleBlog(id , response : Response , db : Session = Depends(get_db)) :
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
 
@@ -39,7 +42,7 @@ def getSingleBlog(id , response : Response , db : Session = Depends(get_db)) :
     return blog
 
 
-@router.delete('/blog/{id}' , status_code=204 , tags=['blogs'])
+@router.delete('/{id}' , status_code=204 )
 def deleteBlog(id,db : Session = Depends(get_db)) :
     #deelte blog >>
     #get the blog with that id>
@@ -58,7 +61,7 @@ def deleteBlog(id,db : Session = Depends(get_db)) :
     }
 
 
-@router.put('/blog/{id}', status_code = 202 , tags=['blogs'])
+@router.put('/{id}', status_code = 202 )
 def updateBlog(id ,request : schemas.Blog , db : Session = Depends(get_db)) : #we need the req body to update the blog
     blog = db.query(models.Blog).filter(models.Blog.id == id)
 

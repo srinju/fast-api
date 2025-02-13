@@ -3,11 +3,16 @@ from fastapi import FastAPI,Depends,status,Response , HTTPException
 from .. import schemas , models , hashing
 from ..database import engine,get_db
 from sqlalchemy.orm import Session
+
+
+router = APIRouter(
+    prefix="/user",
+    tags=['users']
+);
+
 #create user>>
 
-router = APIRouter();
-
-@router.post('/user' , status_code = 201, response_model = schemas.showUser , tags=['users'])
+@router.post('/' , status_code = 201, response_model = schemas.showUser)
 def createUser(request : schemas.User , db : Session = Depends(get_db)) :
     hashedPassword = hashing.Hash.bcrypt(request.password) # hash the password
 
@@ -24,7 +29,7 @@ def createUser(request : schemas.User , db : Session = Depends(get_db)) :
     return newUser
 
 #get user by id >>
-@router.get('/user/{id}',status_code = 200 , response_model = schemas.showUser , tags=['users'])
+@router.get('/{id}',status_code = 200 , response_model = schemas.showUser)
 def getUser(id,db : Session = Depends(get_db)) :
     #get the user with that id
     user = db.query(models.User).filter(models.User.id == id).first()
