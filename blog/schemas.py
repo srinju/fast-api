@@ -3,13 +3,7 @@ from pydantic import BaseModel #type:ignore
 class Blog(BaseModel) :
     title : str
     body : str
-
-
-#schema for the blog we will show the user
-class showBlog(Blog) : 
-    class Config() :
-        orm_mode = True
-
+    
 
 class User(BaseModel) :
     name : str
@@ -20,5 +14,17 @@ class User(BaseModel) :
 class showUser(User) :
     name:str
     email : str
+    blogs : list[Blog]
+
+    class Config() :
+        orm_mode = True
+
+
+#schema for the blog we will show the user
+class showBlog(Blog) : 
+    title:str
+    body:str
+    creator:showUser
+    
     class Config() :
         orm_mode = True
