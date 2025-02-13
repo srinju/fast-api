@@ -28,12 +28,15 @@ def createBlog(request : schemas.Blog , db : Session = Depends(get_db)) :
 
 #get the blogs from the db>>
 
-@app.get('/blog')
+@app.get('/blog' , status_code=200 , response_model = list[schemas.showBlog])
 def getBlogs(db : Session = Depends(get_db)) :
     blogs = db.query(models.Blog).all() #query from the db with the model.blog meaning the model we want and .all is all of it
+    if not blogs :
+        raise HTTPException(status_code = 404 , detail = 'blogs were not there!!')
+    
     return blogs
 
-@app.get('/blog/{id}' , status_code = 200)
+@app.get('/blog/{id}' , status_code = 200 , response_model = schemas.showBlog) #response model is schema.blog that means it will not show id
 def getSingleBlog(id , response : Response , db : Session = Depends(get_db)) :
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
 
@@ -76,3 +79,15 @@ def updateBlog(id ,request : schemas.Blog , db : Session = Depends(get_db)) : #w
     blog.update(request.dict())
     db.commit()
     return f'the blog with id {id} was updated successfully!! '
+
+
+#create user>>
+
+
+@app.post('/user' , status_code = 201, response_model = schemas.showUser)
+def createUser(request : schemas.User , db : Session = Depends(get_db)) :
+    newUser = models.User(name=request.name , email=request.email , password = request.password)
+    db.add(newUser)
+    db.commit()
+    db.refresh(newUser)
+    return newUser
