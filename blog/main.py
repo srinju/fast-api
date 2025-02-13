@@ -1,7 +1,8 @@
 from fastapi import FastAPI,Depends,status,Response , HTTPException #type:ignore
-from . import schemas , models
+from . import schemas , models , hashing
 from .database import engine,SessionLocal
 from sqlalchemy.orm import Session
+
 
 app = FastAPI();
 
@@ -83,10 +84,11 @@ def updateBlog(id ,request : schemas.Blog , db : Session = Depends(get_db)) : #w
 
 #create user>>
 
-
 @app.post('/user' , status_code = 201, response_model = schemas.showUser)
 def createUser(request : schemas.User , db : Session = Depends(get_db)) :
-    newUser = models.User(name=request.name , email=request.email , password = request.password)
+    hashedPassword = hashing.Hash.bcrypt(request.password) # hash the password
+
+    newUser = models.User(name=request.name , email=request.email , password = hashedPassword)
     db.add(newUser)
     db.commit()
     db.refresh(newUser)
