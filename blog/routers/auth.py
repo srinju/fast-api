@@ -1,4 +1,5 @@
 from fastapi import APIRouter ,Depends,HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from .. import schemas , models ,hashing , token
 # from ..schemas import Token 
 # from ..hashing import Hash
@@ -12,10 +13,10 @@ router = APIRouter(
 )
 
 @router.post('/login' ,status_code = 200 ,  response_model = schemas.Token)
-def login(request : schemas.Login , db : Session = Depends(get_db)) :
+def login(request : OAuth2PasswordRequestForm = Depends() , db : Session = Depends(get_db)) : #get the request from oauth2passwordrequest form not from ur own schema as the fastapi wouldnt recognise it that's why
     #get the user from the email
     #then check the 
-    user = db.query(models.User).filter(models.User.email == request.email).first()
+    user = db.query(models.User).filter(models.User.email == request.username).first()
 
     if not user :
         raise HTTPException(ststus_code = 404 , detail = 'user not found please create ur account!!')

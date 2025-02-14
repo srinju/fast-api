@@ -1,16 +1,19 @@
 from fastapi import APIRouter
 from fastapi import FastAPI,Depends,status,Response , HTTPException #type:ignore
-from .. import schemas , models , hashing
+from .. import schemas , models , hashing , oauth2
 from ..database import engine,get_db
 from sqlalchemy.orm import Session
+
 
 router = APIRouter(
     prefix="/blog",
     tags=['blogs']
 );
 
+
+# get all the blogs>
 @router.get('/' , status_code=200 , response_model = list[schemas.showBlog], tags=['blogs'])
-def getBlogs(db : Session = Depends(get_db)) :
+def getBlogs(db : Session = Depends(get_db) , current_user : schemas.User = Depends(oauth2.get_current_user)) :
     blogs = db.query(models.Blog).all() #query from the db with the model.blog meaning the model we want and .all is all of it
     if not blogs :
         raise HTTPException(status_code = 404 , detail = 'blogs were not there!!')
@@ -19,7 +22,7 @@ def getBlogs(db : Session = Depends(get_db)) :
 
 
 @router.post('/' , status_code=status.HTTP_201_CREATED )
-def createBlog(request : schemas.Blog , db : Session = Depends(get_db)) :
+def createBlog(request : schemas.Blog , db : Session = Depends(get_db), current_user : schemas.User = Depends(oauth2.get_current_user)) :
     
     new_blog = models.Blog(title=request.title , body=request.body , user_id = 1) #defingin the bolg model that is going to be input in the db
     db.add(new_blog) #add the new blog in the db
@@ -29,7 +32,7 @@ def createBlog(request : schemas.Blog , db : Session = Depends(get_db)) :
 
 
 @router.get('/{id}' , status_code = 200 , response_model = schemas.showBlog ) #response model is schema.blog that means it will not show id
-def getSingleBlog(id , response : Response , db : Session = Depends(get_db)) :
+def getSingleBlog(id , response : Response , db : Session = Depends(get_db),current_user : schemas.User = Depends(oauth2.get_current_user)) :
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
 
     if not blog :
@@ -43,7 +46,7 @@ def getSingleBlog(id , response : Response , db : Session = Depends(get_db)) :
 
 
 @router.delete('/{id}' , status_code=204 )
-def deleteBlog(id,db : Session = Depends(get_db)) :
+def deleteBlog(id,db : Session = Depends(get_db),current_user : schemas.User = Depends(oauth2.get_current_user)) :
     #deelte blog >>
     #get the blog with that id>
     blogWithId = db.query(models.Blog).filter(models.Blog.id == id)
@@ -62,7 +65,7 @@ def deleteBlog(id,db : Session = Depends(get_db)) :
 
 
 @router.put('/{id}', status_code = 202 )
-def updateBlog(id ,request : schemas.Blog , db : Session = Depends(get_db)) : #we need the req body to update the blog
+def updateBlog(id ,request : schemas.Blog , db : Session = Depends(get_db),current_user : schemas.User = Depends(oauth2.get_current_user)) : #we need the req body to update the blog
     blog = db.query(models.Blog).filter(models.Blog.id == id)
 
     if not blog.first() :
